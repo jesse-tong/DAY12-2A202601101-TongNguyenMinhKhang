@@ -44,7 +44,7 @@ USER appuser
 COPY . .
 
 # Healthcheck
-HEALTHCHECK --interval=30s --timeout=5s --start-period=5s \
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s \
   CMD sh -c "curl -f http://localhost:$PORT/health || exit 1"
 
 EXPOSE $PORT
