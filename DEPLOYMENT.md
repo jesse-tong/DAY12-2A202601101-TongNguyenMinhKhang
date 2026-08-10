@@ -73,11 +73,37 @@ done; echo
 Dán output của các lệnh trên vào đây:
 
 ```text
-1. GET /health -> HTTP/1.1 200 OK {"status":"ok","service":"day12-agent","version":"1.0.0"}
-2. GET /ready -> HTTP/1.1 200 OK {"status":"ready","redis":true}
-3. POST /ask (no key) -> HTTP/1.1 401 Unauthorized {"detail":"invalid or missing API key"}
-4. POST /ask (valid key) -> HTTP/1.1 200 OK {"answer":"...", "user_id":"sv-test", "history_length":0, ...}
-5. Rate limit test -> 200 200 200 200 200 200 200 200 200 200 429 429 429 429 429
+$ curl -i https://day12-agent-production-efa2.up.railway.app/health
+HTTP/1.1 200 OK
+{"status":"ok","service":"day12-agent","version":"1.0.0"}
+
+$ curl -i https://day12-agent-production-efa2.up.railway.app/ready
+HTTP/1.1 200 OK
+{"status":"ready","redis":true}
+
+$ curl -i -X POST https://day12-agent-production-efa2.up.railway.app/ask \
+  -H "Content-Type: application/json" \
+  -d '{"question":"Hello"}'
+HTTP/1.1 401 Unauthorized
+{"detail":"invalid or missing API key"}
+
+curl -i -X POST https://day12-agent-production-efa2.up.railway.app/ask \
+      -H "Content-Type: application/json" \
+      -H "X-API-Key: test-api-key-cua-lab" \
+      -H "X-User-Id: sv-test" \
+      -d "{\"question\":\"Deploy la gi\"}"
+HTTP/1.1 200 OK
+{"answer":"Với Deploy la gi, cách làm phổ biến trong production là đặt một lớp gateway phía trước để lo authentication, rate limiting và bảo vệ chi phí. (Mình đang nhớ 20 lượt trao đổi trước đó.)","user_id":"sv-test","history_length":20,"cost_usd":9.57e-05,"tokens":{"in":454,"out":46}}
+
+$ for i in $(seq 1 15); do
+  curl -s -o /dev/null -w "%{http_code} " -X POST https://day12-agent-production-efa2.up.railway.app/ask \
+    -H "Content-Type: application/json" \
+    -H "X-API-Key: $AGENT_API_KEY" \
+    -H "X-User-Id: sv-test" \
+    -d '{"question":"test"}'
+done; echo
+200 200 200 200 200 200 200 200 200 200 429 429 429 429 429
+
 ```
 
 ## Ảnh Chụp Màn Hình
