@@ -21,14 +21,31 @@
 #            docker images day12-agent:prod     # xem dung lượng
 # ═══════════════════════════════════════════════════════════════════
 
-FROM python:3.11
+FROM python:3.11-slim AS builder
 
 WORKDIR /app
 
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Read PORT from environment variable, default to 8000 if not set
+ENV PORT=8000
+
+FROM python:3.11-slim AS runtime
+
+# Copy the installed packages from the builder stage
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+
+# Create a non-root user and switch to it
+RUN useradd -m appuser
+USER appuser
+
 COPY . .
 
-RUN pip install -r requirements.txt
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s \
+  CMD curl -f http://localhost:$PORT/health || exit 1
 
-EXPOSE 8000
+EXPOSE $PORT
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "$PORT"]

@@ -16,7 +16,7 @@ Trong `Settings`, `agent_api_key` không có giá trị mặc định nên app c
 khi khởi động nếu thiếu biến môi trường. Hãy mô tả một tình huống cụ thể mà
 việc "chết sớm" này cứu bạn, so với việc để mặc định `"changeme"`.
 
-> *Câu trả lời của bạn*
+> *Ví dụ: Deploy một chatbot có lưu session trong Supabase cần Supabase secret API key để lưu lịch sử hội thoại, nếu quên biến môi trường API key Supabase mà chết sớm thì deploy sẽ fail và có thể phát hiện được liền, tuy nhiên nếu để mặc định thì mặc dù có thể deploy nếu catch fail trong app, tuy nhiên trả lời có thể gặp lỗi hoặc sai do không lưu được lịch sử hội thoại vào CSDL PostgreSQL trong Supabase.*
 
 ---
 
