@@ -35,6 +35,7 @@ FROM python:3.11-slim AS runtime
 
 # Copy the installed packages from the builder stage
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Create a non-root user and switch to it
 RUN useradd -m appuser
@@ -43,9 +44,9 @@ USER appuser
 COPY . .
 
 # Healthcheck
-HEALTHCHECK --interval=30s --timeout=5s --start-period=30s \
-  CMD curl -f http://localhost:$PORT/health || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s \
+  CMD sh -c "curl -f http://localhost:$PORT/health || exit 1"
 
 EXPOSE $PORT
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "$PORT"]
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
