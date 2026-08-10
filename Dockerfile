@@ -28,10 +28,9 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Read PORT from environment variable, default to 8000 if not set
-ENV PORT=8000
-
 FROM python:3.11-slim AS runtime
+
+ENV PORT=8000
 
 # Copy the installed packages from the builder stage
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
