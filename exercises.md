@@ -143,6 +143,6 @@ Ghi lại **một** lỗi bạn gặp khi deploy lên cloud (build fail, health 
 timeout, sai REDIS_URL, app không đọc `$PORT`...): thông báo lỗi là gì, bạn
 tìm ra nguyên nhân bằng cách nào, và sửa ra sao?
 
-> *- Thông báo lỗi: `Error: Invalid value for '--port': '$PORT' is not a valid integer` làm container crash liên tục.*
-> *- Nguyên nhân: Kiểm tra log bằng `docker compose logs agent`, phát hiện CMD trong Dockerfile sử dụng dạng exec array `["uvicorn", "app.main:app", "--port", "$PORT"]` khiến Docker không thông qua shell để eval biến môi trường `$PORT` mà truyền thẳng chuỗi thô `"$PORT"`.*
-> *- Cách khắc phục: Sửa CMD trong Dockerfile sang dạng shell wrapper: `CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]` giúp đọc và mở rộng biến `$PORT` thành số cổng chính xác.*
+> *- **Thông báo lỗi gặp phải:** `Error: Invalid value for '--port': '$PORT' is not a valid integer` làm service crash liên tục khi deploy lên Railway.*
+> *- **Cách tìm ra nguyên nhân:** Kiểm tra Deployment Log trên Railway Dashboard. Phát hiện file `railway.toml` đang định nghĩa `startCommand = "uvicorn app.main:app --host 0.0.0.0 --port $PORT"`. Vì Railway thực thi lệnh trực tiếp mà không thông qua Shell, biến môi trường `$PORT` không được mở rộng thành số cổng thực tế (như 8000) mà bị truyền dưới dạng chuỗi kí tự thô `"$PORT"` vào `uvicorn`.*
+> *- **Cách sửa:** Sửa lại `startCommand` trong `railway.toml` bọc trong lệnh Shell: `startCommand = "sh -c 'uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}'"` giúp Shell giải mã và gán đúng số cổng do Railway cấp.*
